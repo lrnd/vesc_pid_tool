@@ -1,6 +1,5 @@
 #include <gtk/gtk.h>
 #include <math.h>
-#include <iostream>
 #include <fstream>
 #include <map>
 #include <ctype.h>
@@ -101,7 +100,7 @@ set_combo_box_text_model(GtkComboBoxText *combo_box, string id = "NULL")
     //GtkTreeIter iter;
 
     //TODO loop through valid VESC IDs and add them to the combo box
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(combo_box), NULL, "101");
+//    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(combo_box), NULL, "101");
 //    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(combo_box), NULL, "102");
 //    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(combo_box), NULL, "103");
 //    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(combo_box), NULL, "104");
@@ -127,7 +126,7 @@ void can_recv_thd()
 
     s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
 
-    strcpy(ifr.ifr_name, "vcan0" );
+    strcpy(ifr.ifr_name, "can0" );
     ioctl(s, SIOCGIFINDEX, &ifr);
 
     addr.can_family = AF_CAN;
@@ -275,7 +274,7 @@ send_pid_act (GtkWidget *widget, gpointer   user_data)
 
     sckt = socket(PF_CAN, SOCK_RAW, CAN_RAW);
 
-    strcpy(ifr.ifr_name, "vcan0" );
+    strcpy(ifr.ifr_name, "can0" );
     ioctl(sckt, SIOCGIFINDEX, &ifr);
 
     addr.can_family = AF_CAN;
@@ -428,8 +427,9 @@ gfloat normaliseData (double max, double min, double scale_max, double scale_min
 {
     if(max == min) { 
         min += min/2.0; 
-        max += max/2.0;
+        max -= max/2.0;
     }   //don't want to /0
+   // printf("min is %f, max is %f, scale_min is %f, scale_max is %f, data is %f\n", min, max, scale_min, scale_max, data);
     return (gfloat)(scale_max-scale_min)*((data - min) / (max - min)) + scale_min;
 }
 
@@ -502,9 +502,10 @@ draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
         return FALSE;
     }
 
-    //for (auto &p : response) {
-    //    printf("x: %f, y: %f\n", p.time/1000.0, p.data);
-    //}
+    //TODO add some record functionality. append data to file, input and response...
+    for (auto &p : response) {
+        printf("x: %f, y: %f\n", p.time/1000.0, p.data);
+    }
 
     //min/max to normalise. using scale from response, should be valid for input too
     if (!response.empty()) {    //only plot if we have response data........
@@ -512,8 +513,8 @@ draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
         auto max_data_it = max_element(response.begin(), response.end(), [](const msg_data& a, const msg_data& b) { return a.data < b.data; });
         auto min_time_it = min_element(response.begin(), response.end(), [](const msg_data& a, const msg_data& b) { return a.time < b.time; });
         auto max_time_it = max_element(response.begin(), response.end(), [](const msg_data& a, const msg_data& b) { return a.time < b.time; });
-        printf("max time %f, min time %f\n", max_time_it->time/1000.0, min_time_it->time/1000.0);
-        printf("max data %f, min data %f\n", max_data_it->data, min_data_it->data);
+    //    printf("max time %f, min time %f\n", max_time_it->time/1000.0, min_time_it->time/1000.0);
+    //    printf("max data %f, min data %f\n", max_data_it->data, min_data_it->data);
         while (input.size() > 1) {
             cairo_move_to(cr, normaliseData(max_time_it->time/1000.0, min_time_it->time/1000.0, (double)clip_x2, (double)x_origin_min, (double)input.front().time/1000.0),
                             normaliseData(max_data_it->data, min_data_it->data, (double)clip_y2, (double)y_origin_min, (double)input.front().data));
@@ -560,9 +561,9 @@ int main (int   argc,
     
     //load data.txt with default data
     
-    ofstream file("data.txt");
-    file << 0 << " " << 0 << " " << 0 << " " << 0 << endl;
-    file.close();
+    //ofstream file("data.txt");
+    //file << 0 << " " << 0 << " " << 0 << " " << 0 << endl;
+    //file.close();
 
     /* Construct a GtkBuilder instance and load our UI description */
     builder = gtk_builder_new ();
