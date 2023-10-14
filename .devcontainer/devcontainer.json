@@ -1,0 +1,19 @@
+ {
+      "name": "pid-util",
+      "dockerComposeFile": "compose.yaml",
+      "service": "pid-util",
+      "workspaceFolder": "/root/pid-util",
+      "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools",
+                "ms-vscode.cmake-tools",
+                "GitHub.copilot",
+                "ms-iot.vscode-ros"
+            ]
+            "remote.extensionKind": {
+                "GitHub.copilot": ["ui"],
+            }
+        }
+      }
+}

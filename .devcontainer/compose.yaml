@@ -1,0 +1,18 @@
+services:
+  pid-util:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../:/root/pid-util
+      - /tmp./X11-unix:/tmp./X11-unix
+      - ${XAUTHORITY}:/root/.Xauthority
+    network_mode: host
+    privileged: true
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - XAUTHORITY=/root/.Xauthority
+    tty: true
+    command:
+      sh -c "tail -f /dev/null"
